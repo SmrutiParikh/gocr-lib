@@ -1,0 +1,54 @@
+######################
+# IntelliJ
+######################
+.idea/
+*.iml
+*.iws
+*.ipr
+*.ids
+*.orig
+classes/
+out/
+**/.idea
+.run
+
+######################
+# Visual Studio Code
+######################
+.vscode/
+*.code-workspace
+
+######################
+# Windows
+######################
+# Windows image file caches
+Thumbs.db
+
+# Folder config file
+Desktop.ini
+
+######################
+# Mac OSX
+######################
+.DS_Store
+.svn
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+######################
+# Directories
+######################
+/bin/
+go-ocr
+temp/
+
+######################
+# python
+######################
+*/.venv/
+*/venv/
