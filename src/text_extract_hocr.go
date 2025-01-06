@@ -14,30 +14,30 @@ import (
 )
 
 type TextExtractionHOCRAlgorithm struct {
-	tempFolder string
+	tempFolder  string
+	fontsFolder string
 }
 
-func NewTextExtractionHOCRAlgorithm() *TextExtractionHOCRAlgorithm {
-	return &TextExtractionHOCRAlgorithm{"../temp/"}
+func NewTextExtractionHOCRAlgorithm(fontsFolder string) *TextExtractionHOCRAlgorithm {
+	return &TextExtractionHOCRAlgorithm{"../temp/", fontsFolder}
 }
 
-func (h *TextExtractionHOCRAlgorithm) Execute(fileName string, outDir string) error {
-	if err := extractHocrText(fileName, h.tempFolder); err != nil {
-		return err
+func (h *TextExtractionHOCRAlgorithm) Execute(fileName string, outDir string) (*string, error) {
+	if err := h.extractHocrText(fileName); err != nil {
+		return nil, err
 	}
 
-	text, boxes, pageWidth, pageHeight := extractTextAndBoundingBoxes(
-		h.tempFolder + "extracted-text.hocr")
+	text, boxes, pageWidth, pageHeight := h.extractTextAndBoundingBoxes("extracted-text.hocr")
 
 	if len(text) == 0 || len(boxes) == 0 || pageWidth == 0 || pageHeight == 0 {
-		return fmt.Errorf("error extracting texts and boxes")
+		return nil, fmt.Errorf("error extracting texts and boxes")
 	}
 
 	outFilePath := outDir + changeFileExtension(fileName, ".pdf")
-	return generatePDF(outFilePath, pageWidth, pageHeight, text, boxes)
+	return &outFilePath, h.generatePDF(outFilePath, pageWidth, pageHeight, text, boxes)
 }
 
-func extractHocrText(fileName string, tmpFolder string) error {
+func (h *TextExtractionHOCRAlgorithm) extractHocrText(fileName string) error {
 	err := NewTextExtractionAlgorithm().preProcessImage(fileName)
 	if err != nil {
 		log.Fatal("Failed to preprocess image:", err)
@@ -49,7 +49,7 @@ func extractHocrText(fileName string, tmpFolder string) error {
 	defer client.Close()
 
 	// Set the image from gocv into Tesseract
-	err = client.SetImage(tmpFolder + "processed-image.jpg")
+	err = client.SetImage(h.tempFolder + "processed-image.jpg")
 	if err != nil {
 		log.Fatal("Failed to set image to Tesseract:", err)
 		return err
@@ -61,7 +61,7 @@ func extractHocrText(fileName string, tmpFolder string) error {
 		log.Fatalf("Error extracting HOCR: %v", err)
 	}
 
-	file, err := os.OpenFile(tmpFolder+"extracted-text.hocr", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	file, err := os.OpenFile(h.tempFolder+"extracted-text.hocr", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return err
@@ -84,8 +84,8 @@ type bbox struct {
 	x1, y1, x2, y2 float64
 }
 
-func extractTextAndBoundingBoxes(hocrFilePath string) ([]string, []struct{ x1, y1, x2, y2 float64 }, float64, float64) {
-	file, err := os.Open(hocrFilePath)
+func (h *TextExtractionHOCRAlgorithm) extractTextAndBoundingBoxes(hocrFilePath string) ([]string, []struct{ x1, y1, x2, y2 float64 }, float64, float64) {
+	file, err := os.Open(h.tempFolder + hocrFilePath)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return nil, nil, 0, 0
@@ -202,7 +202,7 @@ func getDimensions(attr html.Attribute) (bbox, error) {
 	return bbox{}, fmt.Errorf("bbox not found")
 }
 
-func generatePDF(outputFilePath string, pageWidth, pageHeight float64,
+func (h *TextExtractionHOCRAlgorithm) generatePDF(outputFilePath string, pageWidth, pageHeight float64,
 	text []string, boxes []struct{ x1, y1, x2, y2 float64 }) error {
 	// Initialize PDF
 	const dpi = 72.0 // Assuming 72 DPI for simplicity (standard for many PDF libraries)
@@ -217,7 +217,7 @@ func generatePDF(outputFilePath string, pageWidth, pageHeight float64,
 	pdf.AddPage()
 
 	// Set font (make sure you have a font file or use a default font)
-	err := pdf.AddTTFFont("Arial", "../fonts/arial.ttf")
+	err := pdf.AddTTFFont("Arial", h.fontsFolder+"arial.ttf")
 	if err != nil {
 		fmt.Println("Error loading font:", err)
 		return err

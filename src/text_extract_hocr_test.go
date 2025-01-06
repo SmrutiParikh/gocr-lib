@@ -10,12 +10,12 @@ func TestExtractTextHOCR(t *testing.T) {
 
 	imageFiles := []string{"input-image.png", "crooked-scan.png", "bill.jpg"}
 
-	algo := NewTextExtractionHOCRAlgorithm()
+	algo := NewTextExtractionHOCRAlgorithm("../fonts/")
 
 	// Loop over image files and verify the output
 	for _, fileName := range imageFiles {
-		algo.Execute("../samples/"+fileName, "../samples/generated-pdf/")
-		if !FileExists("../samples/generated-pdf/" + changeFileExtension(fileName, ".pdf")) {
+		outfilePath, err := algo.Execute("../samples/"+fileName, "../samples/generated-pdf/")
+		if err != nil || !FileExists(*outfilePath) {
 			t.Fatalf("Output pdf not generated for file %s", fileName)
 		}
 	}

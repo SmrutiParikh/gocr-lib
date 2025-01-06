@@ -36,6 +36,19 @@ func main() {
 			break
 		}
 
+	case "TEXT_EXTRACTION_HOCR":
+		{
+			outfilePath, err := src.NewTextExtractionHOCRAlgorithm("fonts/").
+				Execute(inputFile, "hocr/")
+			if err != nil {
+				fmt.Printf("File: %s \nResult: No text extracted.\n", inputFile)
+				break
+			}
+
+			fmt.Printf("File: %s \nResult: \n%s\n", inputFile, *outfilePath)
+			break
+		}
+
 	case "OBJECT_DETECTION":
 		{
 			detectedObjects := src.NewObjectDetectionAlgorithm(
@@ -56,7 +69,7 @@ func main() {
 		}
 
 	default:
-		log.Fatal("Algorithm can be 'TEXT_EXTRACTION' or 'OBJECT_DETECTION'")
+		log.Fatal("Allowed algorithm are: 'TEXT_EXTRACTION', 'TEXT_EXTRACTION_HOCR', 'OBJECT_DETECTION'")
 		os.Exit(1)
 	}
 }

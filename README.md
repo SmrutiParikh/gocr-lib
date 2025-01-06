@@ -7,6 +7,11 @@ This Project uses Golang to play with images using OpenCV, ImageMagick and Tesse
     make run TEXT_EXTRACTION samples/bill.jpg
     ```
 
+- **For Text Extraction using HOCR**:
+    ```bash
+    make run TEXT_EXTRACTION_HOCR samples/input-image.png
+    ```
+
 - **For Object Detection**:
     ```bash
     go run main.go OBJECT_DETECTION samples/kangaroo_horse.png
