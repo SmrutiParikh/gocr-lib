@@ -63,8 +63,9 @@ func main() {
 				break
 			}
 
+			fmt.Printf("File: %s\n", inputFile)
 			for _, detectedObject := range detectedObjects {
-				fmt.Printf("File: %s \nResult: %s with confidence: %2f.\n", inputFile, detectedObject.ClassName, detectedObject.Confidence)
+				fmt.Printf("Result: %s with confidence: %2f.\n", detectedObject.ClassName, detectedObject.Confidence)
 			}
 
 			break

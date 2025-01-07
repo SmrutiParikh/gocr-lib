@@ -16,7 +16,7 @@ This Project uses Golang to play with images using OpenCV, ImageMagick and Tesse
 
 - **For Object Detection**:
     ```bash
-    go run main.go OBJECT_DETECTION samples/traffic.png
+    make run OBJECT_DETECTION samples/traffic.jpg eng
     ```
 
 # Project Setup Guide
