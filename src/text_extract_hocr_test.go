@@ -8,13 +8,17 @@ import (
 func TestExtractTextHOCR(t *testing.T) {
 	removeAllFiles("../samples/generated-pdf")
 
-	imageFiles := []string{"input-image.png", "crooked-scan.png", "bill.jpg"}
+	imageFiles := map[string]string{
+		"input-image.png":  "eng",
+		"crooked-scan.png": "eng",
+		"bill.jpg":         "eng",
+		"japanese.png":     "jpn"}
 
 	algo := NewTextExtractionHOCRAlgorithm("../fonts/")
 
 	// Loop over image files and verify the output
-	for _, fileName := range imageFiles {
-		outfilePath, err := algo.Execute("../samples/"+fileName, "../samples/generated-pdf/")
+	for fileName, lang := range imageFiles {
+		outfilePath, err := algo.Execute("../samples/"+fileName, lang, "../samples/generated-pdf/")
 		if err != nil || !FileExists(*outfilePath) {
 			t.Fatalf("Output pdf not generated for file %s", fileName)
 		}

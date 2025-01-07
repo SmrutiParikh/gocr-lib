@@ -7,20 +7,25 @@ import (
 
 // Unit test for checking text extraction from multiple images
 func TestExtractText(t *testing.T) {
-	imageFiles := []string{"input-image.png", "crooked-scan.png", "bill.jpg"}
+	imageFiles := map[string]string{
+		"input-image.png":  "eng",
+		"crooked-scan.png": "eng",
+		"bill.jpg":         "eng",
+		"japanese.png":     "jpn"}
 
 	expectedOutputs := map[string]string{
 		"input-image.png":  "../samples/extracted-text/input-image.txt",
 		"crooked-scan.png": "../samples/extracted-text/crooked-scan.txt",
 		"bill.jpg":         "../samples/extracted-text/bill.txt",
+		"japanese.png":     "../samples/extracted-text/japanese.txt",
 	}
 
 	algo := NewTextExtractionAlgorithm()
 
 	// Loop over image files and verify the output
-	for _, fileName := range imageFiles {
+	for fileName, lang := range imageFiles {
 		// Extract text from the image
-		extractedText := algo.Execute("../samples/" + fileName)
+		extractedText := algo.Execute("../samples/"+fileName, lang)
 
 		// Get the expected output for the file
 		expectedText, err := os.ReadFile(expectedOutputs[fileName])

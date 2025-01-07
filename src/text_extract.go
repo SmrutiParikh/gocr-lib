@@ -17,7 +17,7 @@ func NewTextExtractionAlgorithm() *TextExtractionAlgorithm {
 	return &TextExtractionAlgorithm{"../temp/"}
 }
 
-func (t *TextExtractionAlgorithm) Execute(fileName string) string {
+func (t *TextExtractionAlgorithm) Execute(fileName string, lang string) string {
 	err := t.preProcessImage(fileName)
 	if err != nil {
 		log.Fatal("Failed to preprocess image:", err)
@@ -27,6 +27,8 @@ func (t *TextExtractionAlgorithm) Execute(fileName string) string {
 	// Now we will use Tesseract to extract text from the processed image
 	client := gosseract.NewClient()
 	defer client.Close()
+
+	client.SetLanguage(lang)
 
 	// Set the image to Tesseract
 	err = client.SetImage(t.tempFolder + "processed-image.jpg")

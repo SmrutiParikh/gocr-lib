@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 3 {
-		log.Fatal("Please provide the *Algorithm* and *Input file path* as an argument.")
+	if len(os.Args) < 4 {
+		log.Fatal("Please provide the *Algorithm*, *Input file path* and *language* as an argument.")
 		os.Exit(1)
 	}
 
@@ -17,6 +17,8 @@ func main() {
 
 	// The first argument is the input file path
 	inputFile := os.Args[2]
+
+	language := os.Args[3]
 
 	// Read the file content
 	if ok := src.FileExists(inputFile); !ok {
@@ -27,7 +29,7 @@ func main() {
 	case "TEXT_EXTRACTION":
 		{
 			extractedText := src.NewTextExtractionAlgorithm().
-				Execute(inputFile)
+				Execute(inputFile, language)
 			if len(extractedText) == 0 {
 				fmt.Printf("File: %s \nResult: No text extracted.\n", inputFile)
 				break
@@ -39,7 +41,7 @@ func main() {
 	case "TEXT_EXTRACTION_HOCR":
 		{
 			outfilePath, err := src.NewTextExtractionHOCRAlgorithm("fonts/").
-				Execute(inputFile, "hocr/")
+				Execute(inputFile, language, "hocr/")
 			if err != nil {
 				fmt.Printf("File: %s \nResult: No text extracted.\n", inputFile)
 				break

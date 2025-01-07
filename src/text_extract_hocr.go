@@ -22,8 +22,8 @@ func NewTextExtractionHOCRAlgorithm(fontsFolder string) *TextExtractionHOCRAlgor
 	return &TextExtractionHOCRAlgorithm{"../temp/", fontsFolder}
 }
 
-func (h *TextExtractionHOCRAlgorithm) Execute(fileName string, outDir string) (*string, error) {
-	if err := h.extractHocrText(fileName); err != nil {
+func (h *TextExtractionHOCRAlgorithm) Execute(fileName, lang, outDir string) (*string, error) {
+	if err := h.extractHocrText(fileName, lang); err != nil {
 		return nil, err
 	}
 
@@ -34,10 +34,10 @@ func (h *TextExtractionHOCRAlgorithm) Execute(fileName string, outDir string) (*
 	}
 
 	outFilePath := outDir + changeFileExtension(fileName, ".pdf")
-	return &outFilePath, h.generatePDF(outFilePath, pageWidth, pageHeight, text, boxes)
+	return &outFilePath, h.generatePDF(lang, outFilePath, pageWidth, pageHeight, text, boxes)
 }
 
-func (h *TextExtractionHOCRAlgorithm) extractHocrText(fileName string) error {
+func (h *TextExtractionHOCRAlgorithm) extractHocrText(fileName, lang string) error {
 	err := NewTextExtractionAlgorithm().preProcessImage(fileName)
 	if err != nil {
 		log.Fatal("Failed to preprocess image:", err)
@@ -48,6 +48,7 @@ func (h *TextExtractionHOCRAlgorithm) extractHocrText(fileName string) error {
 	client := gosseract.NewClient()
 	defer client.Close()
 
+	client.SetLanguage(lang)
 	// Set the image from gocv into Tesseract
 	err = client.SetImage(h.tempFolder + "processed-image.jpg")
 	if err != nil {
@@ -202,7 +203,7 @@ func getDimensions(attr html.Attribute) (bbox, error) {
 	return bbox{}, fmt.Errorf("bbox not found")
 }
 
-func (h *TextExtractionHOCRAlgorithm) generatePDF(outputFilePath string, pageWidth, pageHeight float64,
+func (h *TextExtractionHOCRAlgorithm) generatePDF(lang, outputFilePath string, pageWidth, pageHeight float64,
 	text []string, boxes []struct{ x1, y1, x2, y2 float64 }) error {
 	// Initialize PDF
 	const dpi = 72.0 // Assuming 72 DPI for simplicity (standard for many PDF libraries)
@@ -217,15 +218,28 @@ func (h *TextExtractionHOCRAlgorithm) generatePDF(outputFilePath string, pageWid
 	pdf.AddPage()
 
 	// Set font (make sure you have a font file or use a default font)
-	err := pdf.AddTTFFont("Arial", h.fontsFolder+"arial.ttf")
-	if err != nil {
-		fmt.Println("Error loading font:", err)
-		return err
-	}
-	err = pdf.SetFont("Arial", "", 12)
-	if err != nil {
-		fmt.Println("Error setting font:", err)
-		return err
+	if lang == "jpn" {
+		err := pdf.AddTTFFont("Noto Sans", h.fontsFolder+"noto_sans.ttf")
+		if err != nil {
+			fmt.Println("Error loading font:", err)
+			return err
+		}
+		err = pdf.SetFont("Noto Sans", "", 12)
+		if err != nil {
+			fmt.Println("Error setting font:", err)
+			return err
+		}
+	} else {
+		err := pdf.AddTTFFont("Arial", h.fontsFolder+"arial.ttf")
+		if err != nil {
+			fmt.Println("Error loading font:", err)
+			return err
+		}
+		err = pdf.SetFont("Arial", "", 12)
+		if err != nil {
+			fmt.Println("Error setting font:", err)
+			return err
+		}
 	}
 
 	// Iterate through the text and bounding boxes and add text at the specified positions
@@ -240,7 +254,7 @@ func (h *TextExtractionHOCRAlgorithm) generatePDF(outputFilePath string, pageWid
 	}
 
 	// Write the output PDF
-	err = pdf.WritePdf(outputFilePath)
+	err := pdf.WritePdf(outputFilePath)
 	if err != nil {
 		fmt.Println("Error writing PDF:", err)
 		return err
