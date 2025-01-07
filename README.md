@@ -4,17 +4,19 @@ This Project uses Golang to play with images using OpenCV, ImageMagick and Tesse
 
 - **For Text Extraction**:
     ```bash
-    make run TEXT_EXTRACTION samples/bill.jpg eng
+    make run TEXT_EXTRACTION samples/Eric_BROOKS-Resume.jpg eng
+    make run TEXT_EXTRACTION samples/japanese.png jpn
     ```
 
 - **For Text Extraction using HOCR**:
     ```bash
-    make run TEXT_EXTRACTION_HOCR samples/input-image.png eng
+    make run TEXT_EXTRACTION_HOCR samples/Eric_BROOKS-Resume.jpg eng
+    make run TEXT_EXTRACTION_HOCR samples/japanese jpn
     ```
 
 - **For Object Detection**:
     ```bash
-    go run main.go OBJECT_DETECTION samples/kangaroo_horse.png
+    go run main.go OBJECT_DETECTION samples/traffic.png
     ```
 
 # Project Setup Guide
@@ -87,6 +89,8 @@ This project utilizes **OpenCV**, **ImageMagick**, and **Tesseract** for image p
 
 ### OpenCV (4.10.0)
 OpenCV is used for image processing tasks like object detection and manipulation. Since we are using `gocv` version `0.39.0`, which is compatible with OpenCV 4.10.0, here are the steps to manually install OpenCV.
+
+Ref: https://github.com/hybridgroup/gocv/releases
 
 #### **Steps to Install OpenCV (4.10.0)**
 
@@ -192,6 +196,7 @@ ImageMagick is used for image manipulation, such as resizing, rotating, or conve
       ./configure
       make
       sudo make install
+      sudo ldconfig /usr/local/lib
       ```
 
 4. **Verify Installation**:
