@@ -46,7 +46,7 @@ Desktop.ini
 /bin/
 go-ocr
 temp/
-hocr/
+generated-*
 
 ######################
 # python

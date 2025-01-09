@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"go-ocr/src"
+	doc "go-ocr/src/documents"
+	img "go-ocr/src/images"
+	vid "go-ocr/src/videos"
 	"log"
 	"os"
 )
@@ -26,9 +29,9 @@ func main() {
 	}
 
 	switch algorithm {
-	case "TEXT_EXTRACTION":
+	case "PLAIN_TEXT_EXTRACTION":
 		{
-			extractedText := src.NewTextExtractionAlgorithm().
+			extractedText := doc.NewPlainTextExtractor().
 				Execute(inputFile, language)
 			if len(extractedText) == 0 {
 				fmt.Printf("File: %s \nResult: No text extracted.\n", inputFile)
@@ -38,12 +41,12 @@ func main() {
 			break
 		}
 
-	case "TEXT_EXTRACTION_HOCR":
+	case "HOCR_TEXT_EXTRACTION":
 		{
-			outfilePath, err := src.NewTextExtractionHOCRAlgorithm("fonts/").
-				Execute(inputFile, language, "hocr/")
+			outfilePath, err := doc.NewHOCRTextExtractor("fonts/").
+				Execute(inputFile, language, "output/generated-hocr/")
 			if err != nil {
-				fmt.Printf("File: %s \nResult: No text extracted.\n", inputFile)
+				fmt.Printf("File: %s \nResult: No text extracted.%s\n", inputFile, err)
 				break
 			}
 
@@ -51,13 +54,14 @@ func main() {
 			break
 		}
 
-	case "OBJECT_DETECTION":
+	case "IMG_OBJECT_DETECTION":
 		{
-			detectedObjects := src.NewObjectDetectionAlgorithm(
+			detectedObjects := img.NewImageObjectDetector(
 				"models/yolov3.weights",
 				"models/yolov3.cfg",
 				"models/coco.names").
 				Execute(inputFile)
+
 			if len(detectedObjects) == 0 {
 				fmt.Printf("File: %s \nResult: No objects detected.\n", inputFile)
 				break
@@ -70,9 +74,26 @@ func main() {
 
 			break
 		}
+	case "VIDEO_OBJECT_DETECTION":
+		{
+			outfilePath, err := vid.NewVideoObjectDetector(
+				"models/yolov3.weights",
+				"models/yolov3.cfg",
+				"models/coco.names").
+				Execute(inputFile, "output/generated-video/", true)
+
+			if err != nil {
+				fmt.Printf("File: %s \nResult: No objects detected.%s\n", inputFile, err)
+				break
+			}
+
+			fmt.Printf("File: %s \nResult: \n%s\n", inputFile, *outfilePath)
+
+			break
+		}
 
 	default:
-		log.Fatal("Allowed algorithm are: 'TEXT_EXTRACTION', 'TEXT_EXTRACTION_HOCR', 'OBJECT_DETECTION'")
+		log.Fatal("Allowed algorithm are: 'PLAIN_TEXT_EXTRACTION', 'HOCR_TEXT_EXTRACTION', 'IMG_OBJECT_DETECTION','VIDEO_OBJECT_DETECTION'")
 		os.Exit(1)
 	}
 }

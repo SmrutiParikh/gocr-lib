@@ -1,13 +1,17 @@
 package src
 
 import (
+	"bufio"
 	"fmt"
 	"math"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"gocv.io/x/gocv"
 )
 
-func changeFileExtension(fileName, newExtension string) string {
+func ChangeFileExtension(fileName, newExtension string) string {
 	// Get the base name without extension
 	baseName := filepath.Base(fileName)
 
@@ -23,7 +27,7 @@ func FileExists(filePath string) bool {
 	return !os.IsNotExist(err)
 }
 
-func mapToSlice[K comparable, V any](m map[K]V) []V {
+func MapToSlice[K comparable, V any](m map[K]V) []V {
 	s := make([]V, 0, len(m))
 	for _, v := range m {
 		s = append(s, v)
@@ -31,11 +35,11 @@ func mapToSlice[K comparable, V any](m map[K]V) []V {
 	return s
 }
 
-func approximatelyEqual(a, b, epsilon float32) bool {
+func ApproximatelyEqual(a, b, epsilon float32) bool {
 	return math.Abs(float64(a-b)) < float64(epsilon)
 }
 
-func removeAllFiles(dir string) error {
+func RemoveAllFiles(dir string) error {
 	// Open the directory
 	dirEntries, err := os.ReadDir(dir)
 	if err != nil {
@@ -49,7 +53,7 @@ func removeAllFiles(dir string) error {
 
 		// If it's a directory, call the removeAllFiles function recursively
 		if entry.IsDir() {
-			err := removeAllFiles(fullPath)
+			err := RemoveAllFiles(fullPath)
 			if err != nil {
 				return err
 			}
@@ -67,4 +71,34 @@ func removeAllFiles(dir string) error {
 		}
 	}
 	return nil
+}
+
+// Function to read class names (from coco.names file)
+func ReadClasses(classFile string) ([]string, error) {
+	var classes []string
+	// Load class labels from file
+	file, err := os.Open(classFile)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		classes = append(classes, strings.TrimSpace(scanner.Text()))
+	}
+	return classes, scanner.Err()
+}
+
+func GetClassIndexAndConfidence(data gocv.Mat) (int, float32) {
+	confidence := float32(0)
+	index := 5
+	for j := 5; j < data.Cols(); j++ {
+		if data.GetFloatAt(0, j) > confidence {
+			index = j
+			confidence = data.GetFloatAt(0, j)
+		}
+
+	}
+	return index - 5, confidence
 }
